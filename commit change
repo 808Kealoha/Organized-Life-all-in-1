@@ -1,0 +1,162 @@
+import { useEffect, useState } from "react";
+
+export default function App() {
+  const [tasks, setTasks] = useState([]);
+  const [input, setInput] = useState("");
+
+  const [healthLogs, setHealthLogs] = useState([]);
+  const [pain, setPain] = useState("");
+  const [energy, setEnergy] = useState("");
+  const [note, setNote] = useState("");
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("app") || "{}");
+    setTasks(saved.tasks || []);
+    setHealthLogs(saved.healthLogs || []);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "app",
+      JSON.stringify({ tasks, healthLogs })
+    );
+  }, [tasks, healthLogs]);
+
+  const addTask = () => {
+    if (!input) return;
+
+    setTasks([
+      ...tasks,
+      {
+        id: Date.now(),
+        text: input,
+        done: false,
+      },
+    ]);
+
+    setInput("");
+  };
+
+  const toggleTask = (id) => {
+    setTasks(
+      tasks.map((t) =>
+        t.id === id ? { ...t, done: !t.done } : t
+      )
+    );
+  };
+
+  const addHealth = () => {
+    if (!pain && !energy && !note) return;
+
+    setHealthLogs([
+      {
+        id: Date.now(),
+        pain,
+        energy,
+        note,
+        date: new Date().toLocaleDateString(),
+      },
+      ...healthLogs,
+    ]);
+
+    setPain("");
+    setEnergy("");
+    setNote("");
+  };
+
+  return (
+    <div
+      style={{
+        padding: 20,
+        fontFamily: "Arial",
+        maxWidth: 500,
+        margin: "auto",
+      }}
+    >
+      <h1>Life + Health Organizer</h1>
+
+      <h2>Tasks</h2>
+
+      <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Add task"
+      />
+
+      <button onClick={addTask}>
+        Add
+      </button>
+
+      <div style={{ marginTop: 10 }}>
+        {tasks.map((t) => (
+          <div
+            key={t.id}
+            onClick={() => toggleTask(t.id)}
+            style={{
+              cursor: "pointer",
+              textDecoration: t.done
+                ? "line-through"
+                : "none",
+              marginBottom: 8,
+            }}
+          >
+            {t.text}
+          </div>
+        ))}
+      </div>
+
+      <hr style={{ margin: "20px 0" }} />
+
+      <h2>Health Tracker</h2>
+
+      <input
+        placeholder="Pain 1-10"
+        value={pain}
+        onChange={(e) => setPain(e.target.value)}
+      />
+
+      <br />
+      <br />
+
+      <input
+        placeholder="Energy 1-10"
+        value={energy}
+        onChange={(e) => setEnergy(e.target.value)}
+      />
+
+      <br />
+      <br />
+
+      <input
+        placeholder="Notes"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+      />
+
+      <br />
+      <br />
+
+      <button onClick={addHealth}>
+        Save Health Log
+      </button>
+
+      <div style={{ marginTop: 20 }}>
+        {healthLogs.map((h) => (
+          <div
+            key={h.id}
+            style={{
+              border: "1px solid #ccc",
+              padding: 10,
+              marginBottom: 10,
+            }}
+          >
+            <div>{h.date}</div>
+            <div>Pain: {h.pain}</div>
+            <div>Energy: {h.energy}</div>
+            <div>{h.note}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
